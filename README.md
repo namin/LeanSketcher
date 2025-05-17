@@ -7,6 +7,8 @@
 
 This is a first step toward a broader system for **proof sketch automation** — blending user-supplied structure (e.g. "do induction") with tactical automation (e.g. try `grind`, `split`, `simp`, etc.).
 
+The broader system would be a discovery system, integrating learning and LLMs.
+
 ## Features
 
 * `auto_induction e`: performs induction on `e`, followed by simplification using functions in the goal and `grind`/`split` strategies.
