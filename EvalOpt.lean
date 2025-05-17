@@ -1,7 +1,5 @@
 import LeanSketcher
 
--- Thanks to Arthur Adjedj for helping with the proofs
-
 -- Datatype for arithmetic expressions
 inductive Expr where
   | const : Int → Expr                 -- Constants like 5
