@@ -4,8 +4,6 @@
 
 This is a first step toward a broader system for **proof sketch automation** — blending user-supplied structure (e.g. "do induction") with tactical automation (e.g. try `grind`, `split`, `simp`, etc.).
 
----
-
 ## Features
 
 * `auto_induction e`: performs induction on `e`, followed by simplification using functions in the goal and `grind`/`split` strategies.
@@ -17,24 +15,6 @@ This is a first step toward a broader system for **proof sketch automation** —
 * `LeanSketcher.lean`: Main entry point for the tactics.
 * `EvalOpt.lean`: Example proof script demonstrating the tactics.
 
----
-
 ## Acknowledgements
 
 * Thanks to Arthur Adjedj for helping with the proofs that led to this automation.
-
----
-
-## Contributing
-
-This is an open research prototype. Contributions and experiments are welcome. Feel free to open issues for:
-
-* new tactic ideas
-* failed cases
-* integration with your own proof infrastructure
-
----
-
-## License
-
-MIT
