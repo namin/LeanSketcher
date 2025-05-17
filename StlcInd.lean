@@ -8,6 +8,7 @@
 
 import Mathlib.Data.Set.Basic
 import LeanSketcher
+set_option grind.warning false
 
 -- Syntax
 
