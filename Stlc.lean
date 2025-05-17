@@ -195,7 +195,6 @@ theorem soundness (t t' : Tm) (T : Ty) (n : Nat) :
     rw [hr] at hs
     exact hs
   case succ n ih =>
-
     simp [reduces_to] at hr
     simp [reduces_to] at ih
     cases h : step t with
