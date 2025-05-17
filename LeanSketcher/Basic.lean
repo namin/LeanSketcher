@@ -78,17 +78,38 @@ syntax (name := autoInduction) "auto_induction" term : tactic
 def evalAutoInduction : Tactic := fun
   | `(tactic| auto_induction $t:term) => do
       let names ← getSimpNamesFromGoal
-      let simpNames <- mkSimpSyntax names
-      let simpStx := TSyntax.mk simpNames
+      let simpTactic ← mkSimpSyntax names
+      let grindArgs ← names.mapM fun n => do
+        let id := Lean.mkIdent n
+        `(grindParam| $(id):ident)
+      let grindTactic ← `(tactic| grind +ring [$grindArgs.toArray,*])
 
-      let full ← `(tactic|
-        induction $t:term <;>
-        $simpStx <;>
-        split <;>
-        $simpStx
-      )
-      --logInfo m!"Full tactic: {full}"
-      evalTactic full
+      let goal ← getMainGoal
+
+      -- Try sequence 1: grind <;> simp
+      try
+        setGoals [goal]
+        evalTactic (← `(tactic|
+          induction $t:term <;>
+          $simpTactic <;>
+          $grindTactic
+        ))
+        if (← getUnsolvedGoals).isEmpty then return ()
+      catch _ => pure ()
+
+      -- Try sequence 2: split <;> simp
+      try
+        setGoals [goal]
+        evalTactic (← `(tactic|
+          induction $t:term <;>
+          $simpTactic <;>
+          split <;>
+          $simpTactic
+        ))
+        if (← getUnsolvedGoals).isEmpty then return ()
+      catch _ => pure ()
+
+      throwError "auto_induction failed: all strategies left goals unsolved"
   | _ => throwUnsupportedSyntax
 
 end LeanSketcher
