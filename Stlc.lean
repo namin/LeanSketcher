@@ -168,4 +168,26 @@ theorem soundness (t t' : Tm) (T : Ty) (n : Nat) :
   reduces_to t t' n →
   ¬ stuck t' := by
   -- Proof by induction on n using progress and preservation
-  sorry
+  intros ht hr
+  have hc : (has_type [] t).isSome = true := by
+      rw [ht]
+      rfl
+  have hp := progress t hc
+  induction n
+  case zero =>
+    simp [reduces_to] at hr
+    have hv := progress t hc
+    cases hv
+    case inl hv =>
+      simp [stuck]
+      intro
+      rw [hr] at hv
+      assumption
+    case inr hs =>
+      simp [stuck, normal_form]
+      intro hs'
+      rw [hr] at hs
+      rw [hs', Option.isSome] at hs
+      contradiction
+  case succ n ih =>
+    sorry
