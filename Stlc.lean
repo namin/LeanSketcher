@@ -156,10 +156,24 @@ theorem preservation (t : Tm) (t' : Tm):
   sorry
 
 -- A normal form cannot step
-def normal_form (t : Tm) : Prop := ¬ Option.isSome (step t)
+def normal_form (t : Tm) : Prop := ¬ (step t).isSome
 
 -- A stuck term is a normal form that is not a value
 def stuck (t : Tm) : Prop := normal_form t ∧ ¬ value t
+
+lemma progress_not_stuck (t: Tm) :
+  value t = true ∨ (step t).isSome →
+  ¬ stuck t := by
+  intro hp
+  cases hp with
+  | inl hv =>
+      simp [stuck]
+      intro
+      assumption
+   | inr hs =>
+      simp [stuck]
+      intro hn
+      contradiction
 
 -- Type soundness:
 -- A well-typed term cannot get stuck
@@ -173,21 +187,14 @@ theorem soundness (t t' : Tm) (T : Ty) (n : Nat) :
       rw [ht]
       rfl
   have hp := progress t hc
+  have hs := progress_not_stuck t hp
   induction n
   case zero =>
     simp [reduces_to] at hr
-    have hv := progress t hc
-    cases hv
-    case inl hv =>
-      simp [stuck]
-      intro
-      rw [hr] at hv
-      assumption
-    case inr hs =>
-      simp [stuck, normal_form]
-      intro hs'
-      rw [hr] at hs
-      rw [hs', Option.isSome] at hs
-      contradiction
+    rw [hr] at hs
+    exact hs
   case succ n ih =>
-    sorry
+    by_cases hr : t = t'
+    · rw [hr] at hs
+      exact hs
+    · sorry
