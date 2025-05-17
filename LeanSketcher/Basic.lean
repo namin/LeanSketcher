@@ -71,11 +71,11 @@ def evalAutoSimp : Tactic
     applySimpImpl names
   | _ => throwUnsupportedSyntax
 
-/-- Tactic for automatically solving optimize_optimal theorems -/
-syntax (name := autoInduction) "auto_induction" term : tactic
+/-- Tactic for automatically solving theorems by induction -/
+syntax (name := autoInductionWithArg) "auto_induction" term : tactic
 
-@[tactic autoInduction]
-def evalAutoInduction : Tactic := fun
+@[tactic autoInductionWithArg]
+def evalAutoInductionWithArg : Tactic := fun
   | `(tactic| auto_induction $t:term) => do
       let names ← getSimpNamesFromGoal
       let simpTactic ← mkSimpSyntax names
@@ -110,6 +110,40 @@ def evalAutoInduction : Tactic := fun
       catch _ => pure ()
 
       throwError "auto_induction failed: all strategies left goals unsolved"
+  | _ => throwUnsupportedSyntax
+
+syntax (name := autoInduction) "auto_induction": tactic
+
+@[tactic autoInduction]
+def evalAutoInduction : Tactic := fun
+  | `(tactic| auto_induction) => do
+    let goal ← getMainGoal
+    let lctx ← getLCtx
+
+    -- Collect all candidate fvars of inductive type
+    let candidates ← lctx.getFVarIds.foldlM (init := []) fun acc fvarId => do
+      let decl := lctx.get! fvarId
+      let type ← instantiateMVars decl.type
+      let env ← getEnv
+      match type.getAppFn with
+      | Expr.const indName .. =>
+        match env.find? indName with
+        | some (ConstantInfo.inductInfo _) =>
+          return acc ++ [mkFVar fvarId]
+        | _ => return acc
+      | _ => return acc
+
+    -- Try each candidate
+    for t in candidates do
+      try
+        let idStx ← Lean.Elab.Term.exprToSyntax t
+        setGoals [goal]
+        evalTactic (← `(tactic| auto_induction $idStx))
+        if (← getUnsolvedGoals).isEmpty then return ()
+      catch _ => pure ()
+
+    throwError "auto_induction failed: no suitable variable found"
+
   | _ => throwUnsupportedSyntax
 
 end LeanSketcher

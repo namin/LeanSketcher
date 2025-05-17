@@ -51,7 +51,7 @@ theorem optimize_preserves_semantics (e : Expr) (env : Env) :
   induction e <;> simp [optimize, evaluate]
   <;> grind +ring [optimize, evaluate]
 theorem optimize_preserves_semantics_sketched (e : Expr) (env : Env) :
-  evaluate (optimize e) env = evaluate e env := by auto_induction e
+  evaluate (optimize e) env = evaluate e env := by auto_induction
 
 -- Predicate defining an optimally optimized expression
 def optimal : Expr → Bool
@@ -73,4 +73,4 @@ theorem optimize_optimal (e : Expr) :
   optimal (optimize e) := by
   induction e <;> simp [optimize, optimal] <;> split <;> simp [optimal, *]
 theorem optimize_optimal_sketched (e : Expr) :
-  optimal (optimize e) := by auto_induction e
+  optimal (optimize e) := by auto_induction
