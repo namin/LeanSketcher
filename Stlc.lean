@@ -8,6 +8,7 @@
   https://github.com/namin/dafny-sandbox/blob/master/Stlc.dfy
 -/
 
+import LeanSketcher
 import Mathlib.Data.Set.Basic
 
 -- Syntax
@@ -194,7 +195,11 @@ theorem soundness (t t' : Tm) (T : Ty) (n : Nat) :
     rw [hr] at hs
     exact hs
   case succ n ih =>
-    by_cases hr : t = t'
-    · rw [hr] at hs
-      exact hs
-    · sorry
+
+    simp [reduces_to] at hr
+    simp [reduces_to] at ih
+    cases h : step t with
+    | some t_step =>
+      sorry
+    | none =>
+      sorry
