@@ -1,5 +1,8 @@
 # LeanSketcher
 
+[![CI Status](https://github.com/namin/LeanSketcher/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/namin/LeanSketcher/actions/workflows/lean_action_ci.yml)
+
+
 **LeanSketcher** is an experimental Lean 4 project for automating inductive proofs and simplification. It provides lightweight custom tactics that combine structured induction, domain-specific simplification, and tactic backtracking to mimic "proof sketching."
 
 This is a first step toward a broader system for **proof sketch automation** — blending user-supplied structure (e.g. "do induction") with tactical automation (e.g. try `grind`, `split`, `simp`, etc.).
