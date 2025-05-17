@@ -94,7 +94,31 @@ def closed (t : Tm) : Prop := fv t = ∅
 -- A well-typed term is either a value or it can step
 theorem progress (t : Tm) (T : Ty) :
   HasType [] t T → Value t ∨ ∃ t', Step t t' := by
-  sorry
+  intros htype
+  generalize hΓ : [] = Γ at htype
+  induction htype with
+  | var Γ x T hlookup =>
+      -- Variables can't be typed in empty context
+      rw [← hΓ] at hlookup
+      simp at hlookup
+  | abs _ x T1 T2 body _ =>
+      -- Abstractions are values
+      left
+      apply Value.abs
+  | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
+      -- Application case
+      right
+      cases ih1 hΓ with
+      | inl hval1 =>
+          -- t1 is a value with arrow type
+          sorry
+      | inr hstep1 =>
+          -- t1 can step
+          cases hstep1 with
+          | intro t1' hstep1' =>
+              exists (Tm.tapp t1' t2)
+              apply Step.app1
+              exact hstep1'
 
 -- Lemma: If x is free in t and t is well-typed in context Γ,
 -- then x must be bound in Γ
