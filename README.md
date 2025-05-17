@@ -13,7 +13,8 @@ This is a first step toward a broader system for **proof sketch automation** —
 ## Repository structure
 
 * `LeanSketcher.lean`: Main entry point for the tactics.
-* `EvalOpt.lean`: Example proof script demonstrating the tactics.
+* [`EvalOpt.lean`](EvalOpt.lean): Example proof script demonstrating the tactics.
+* [`LeanSketcher/Basic.lean`](LeanSketcher/Basic.lean): Internals.
 
 ## Acknowledgements
 
