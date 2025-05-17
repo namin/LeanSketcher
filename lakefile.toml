@@ -1,0 +1,10 @@
+name = "LeanSketcher"
+version = "0.1.0"
+defaultTargets = ["leansketcher"]
+
+[[lean_lib]]
+name = "LeanSketcher"
+
+[[lean_exe]]
+name = "leansketcher"
+root = "Main"
