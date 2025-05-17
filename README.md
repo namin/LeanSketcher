@@ -22,3 +22,5 @@ This is a first step toward a broader system for **proof sketch automation** —
 ## Acknowledgements
 
 * Thanks to Arthur Adjedj for helping with the proofs that led to this automation.
+* Study [`grind`](https://github.com/leanprover/lean4/tree/master/src/Lean/Meta/Tactic/Grind) tactics. [Examples in the test runs prefixed with `grind_`](https://github.com/leanprover/lean4/tree/master/tests/lean/run).
+* Study the textbook for [Interactive Theorem Proving at LMU SoSe 2025](https://github.com/blanchette/interactive_theorem_proving_2025). This is the best resource I found for someone familiar with Rocq.
