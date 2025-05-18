@@ -5,7 +5,6 @@
   This version includes only the core lambda calculus without extensions,
   and uses inductive propositions instead of option types.
 -/
-
 import Mathlib.Data.Set.Basic
 import LeanSketcher
 set_option grind.warning false
@@ -136,7 +135,40 @@ theorem progress (t : Tm) (T : Ty) :
 -- then x must be bound in Γ
 theorem free_in_context (Γ : Context) (x : Nat) (t : Tm) (T : Ty) :
   x ∈ fv t → HasType Γ t T → ∃ T', (∃ i, Γ.get? i = some (x, T')) := by
-  sorry
+  intros hfv htype
+  induction htype with
+  | var Γ y T hlookup =>
+      have Exy : x = y := by sorry
+      subst Exy
+      obtain ⟨i, hlookup'⟩ := hlookup
+      use T
+      use i
+  | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
+      simp [fv] at hfv
+      cases hfv with
+      | inl h1 => exact ih1 h1
+      | inr h2 => exact ih2 h2
+  | abs Γ y T1 T2 body ih1 ih2 =>
+      simp [fv] at hfv
+      let ⟨hin, hnot⟩ := hfv
+      let hex := ih2 hin
+      obtain ⟨T', ⟨i', hlookup'⟩⟩ := hex
+      use T'
+      have Nxy : x ≠ y := by
+        intro hxy
+        apply hnot
+        exact hxy
+      cases i' with
+      | zero =>
+        simp at hlookup'
+        let ⟨Exy, ETT'⟩ := hlookup'
+        subst Exy
+        contradiction
+      | succ j =>
+        use j
+        simp [List.get?, List.get?] at hlookup'
+        simp [List.get?]
+        exact hlookup'
 
 -- Corollary: If a term is well-typed in an empty context,
 -- then it is closed
