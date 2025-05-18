@@ -6,6 +6,7 @@
   and uses inductive propositions instead of option types.
 -/
 import Mathlib.Data.Set.Basic
+import Mathlib.Data.Set.Insert
 import LeanSketcher
 set_option grind.warning false
 
@@ -72,10 +73,15 @@ inductive MultiStep : Tm → Tm → Prop
 -- A context is a partial map from variable names to types
 def Context := List (Nat × Ty)
 
+def lookup (Γ : Context) (x : Nat) : Option Ty :=
+  match Γ with
+  | [] => none
+  | (y, T) :: Γ => if x = y then some T else lookup Γ x
+
 -- Typing relation as an inductive proposition
 inductive HasType : Context → Tm → Ty → Prop
 | var : ∀ (Γ : Context) (x : Nat) (T : Ty),
-    (∃ i, Γ.get? i = some (x, T)) →
+    lookup Γ x = some T →
     HasType Γ (Tm.tvar x) T
 | abs : ∀ (Γ : Context) (x : Nat) (T1 T2 : Ty) (t : Tm),
     HasType ((x, T1) :: Γ) t T2 →
@@ -100,7 +106,7 @@ theorem progress (t : Tm) (T : Ty) :
   | var Γ x T hlookup =>
       -- Variables can't be typed in empty context
       rw [← hΓ] at hlookup
-      simp at hlookup
+      contradiction
   | abs _ x T1 T2 body _ =>
       -- Abstractions are values
       left
@@ -134,15 +140,13 @@ theorem progress (t : Tm) (T : Ty) :
 -- Lemma: If x is free in t and t is well-typed in context Γ,
 -- then x must be bound in Γ
 theorem free_in_context (Γ : Context) (x : Nat) (t : Tm) (T : Ty) :
-  x ∈ fv t → HasType Γ t T → ∃ T', (∃ i, Γ.get? i = some (x, T')) := by
+  x ∈ fv t → HasType Γ t T → ∃ T', lookup Γ x = some T' := by
   intros hfv htype
   induction htype with
   | var Γ y T hlookup =>
-      have Exy : x = y := by sorry
-      subst Exy
-      obtain ⟨i, hlookup'⟩ := hlookup
+      simp [fv] at hfv
+      subst hfv
       use T
-      use i
   | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
       simp [fv] at hfv
       cases hfv with
@@ -152,23 +156,15 @@ theorem free_in_context (Γ : Context) (x : Nat) (t : Tm) (T : Ty) :
       simp [fv] at hfv
       let ⟨hin, hnot⟩ := hfv
       let hex := ih2 hin
-      obtain ⟨T', ⟨i', hlookup'⟩⟩ := hex
+      obtain ⟨T', hlookup'⟩ := hex
       use T'
       have Nxy : x ≠ y := by
         intro hxy
         apply hnot
         exact hxy
-      cases i' with
-      | zero =>
-        simp at hlookup'
-        let ⟨Exy, ETT'⟩ := hlookup'
-        subst Exy
-        contradiction
-      | succ j =>
-        use j
-        simp [List.get?, List.get?] at hlookup'
-        simp [List.get?]
-        exact hlookup'
+      simp [lookup] at hlookup'
+      rw [if_neg hnot] at hlookup'
+      exact hlookup'
 
 -- Corollary: If a term is well-typed in an empty context,
 -- then it is closed
@@ -178,8 +174,8 @@ theorem typable_empty_closed (t : Tm) (T : Ty) :
   by_contra hne
   push_neg at hne
   obtain ⟨x, hx⟩ := Set.nonempty_iff_ne_empty.mpr hne
-  obtain ⟨T', i, hi⟩ := free_in_context [] x t T hx ht
-  simp at hi
+  obtain ⟨T', hi⟩ := free_in_context [] x t T hx ht
+  simp [lookup] at hi
 
 -- Context invariance:
 -- If a term t is well-typed in context Γ,
@@ -187,11 +183,26 @@ theorem typable_empty_closed (t : Tm) (T : Ty) :
 -- then the term t is well-typed in context Γ' with the same type
 theorem context_invariance (Γ Γ' : Context) (t : Tm) (T : Ty) :
   HasType Γ t T →
-  (∀ x, x ∈ fv t →
-    (∃ Tx, (∃ i, Γ.get? i = some (x, Tx))) ↔
-    (∃ Tx, (∃ i, Γ'.get? i = some (x, Tx)))) →
+  (∀ x, x ∈ fv t → (lookup Γ' x) = (lookup Γ x)) →
   HasType Γ' t T := by
-  sorry  -- This proof would be by induction on the typing derivation
+  -- This proof would be by induction on the typing derivation
+  intros htype
+  induction htype with
+  | var Γ y T hlookup =>
+      intros hinv
+      let htype := HasType.var Γ y T hlookup
+      have hfv : y ∈ fv (Tm.tvar y) := by
+        simp [fv]
+      let hxin := free_in_context Γ y (Tm.tvar y) T hfv htype
+      obtain ⟨T', hget⟩ := hxin
+      let hinvy := hinv y hfv
+      rw [hlookup] at hinvy
+      let htype' := HasType.var Γ' y T hinvy
+      exact htype'
+  | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
+      sorry
+  | abs Γ y T1 T2 body ih1 ih2 =>
+      sorry
 
 -- Substitution preserves typing:
 -- If s has type S in an empty context,
