@@ -174,7 +174,12 @@ theorem free_in_context (Γ : Context) (x : Nat) (t : Tm) (T : Ty) :
 -- then it is closed
 theorem typable_empty_closed (t : Tm) (T : Ty) :
   HasType [] t T → closed t := by
-  sorry
+  intro ht
+  by_contra hne
+  push_neg at hne
+  obtain ⟨x, hx⟩ := Set.nonempty_iff_ne_empty.mpr hne
+  obtain ⟨T', i, hi⟩ := free_in_context [] x t T hx ht
+  simp at hi
 
 -- Context invariance:
 -- If a term t is well-typed in context Γ,
