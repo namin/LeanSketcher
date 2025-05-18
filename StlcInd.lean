@@ -112,7 +112,18 @@ theorem progress (t : Tm) (T : Ty) :
       cases ih1 hΓ with
       | inl hval1 =>
           -- t1 is a value with arrow type
-          sorry
+          cases ih2 hΓ with
+          | inl hval2 =>
+              -- t2 is a value
+              cases hval1 with
+              | abs x T1 body =>
+                use subst x t2 body
+                apply Step.app_abs x T1 body t2 hval2
+          | inr hstep2 =>
+              -- t2 can step
+              obtain ⟨t2', hstep2'⟩ := hstep2
+              use Tm.tapp t1 t2'
+              apply Step.app2 t1 t2 t2' hval1 hstep2'
       | inr hstep1 =>
           -- t1 can step
           cases hstep1 with
