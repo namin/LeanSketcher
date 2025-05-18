@@ -29,3 +29,4 @@ The broader system would be a discovery system, integrating learning and LLMs.
 * Study Canonical for Automated Theorem Proving in Lean ([paper](https://arxiv.org/abs/2504.06239), [code](https://github.com/chasenorman/CanonicalLean)).
 * Study [cmu-l3/llmlean](https://github.com/cmu-l3/llmlean) for LLM integration from within Lean.
 * Study [Aesop](https://github.com/leanprover-community/aesop) for whitebox automation.
+* Study [lean-auto](https://github.com/leanprover-community/lean-auto) and [Veil](https://github.com/verse-lab/veil) for SMT integration.
