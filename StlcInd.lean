@@ -230,11 +230,58 @@ theorem context_invariance (Γ Γ' : Context) (t : Tm) (T : Ty) :
 -- If s has type S in an empty context,
 -- and t has type T in a context extended with x having type S,
 -- then [x -> s]t has type T in the empty context
-theorem substitution_preserves_typing (x : Nat) (s t : Tm) (S T : Ty) :
+theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T : Ty) :
   HasType [] s S →
-  HasType [(x, S)] t T →
-  HasType [] (subst x s t) T := by
-  sorry  -- This proof would be by induction on the typing derivation of t
+  HasType ((x, S)::Γ) t T →
+  HasType Γ (subst x s t) T := by
+  intros Hs Ht
+  induction t with
+  | tvar y =>
+    by_cases hxy : x = y
+    . rw [hxy]
+      subst hxy
+      simp [subst]
+      cases Ht with
+      | var Γ x' T' hlookup =>
+        simp [lookup] at hlookup
+        subst hlookup
+        let hc := typable_empty_closed s S Hs
+        simp [closed] at hc
+        let hc2 : ∀ x ∈ fv s, lookup Γ x = lookup [] x := by
+          intro x hx
+          rw [hc] at hx
+          cases hx
+        let hci := context_invariance [] Γ s S Hs hc2
+        exact hci
+    . simp [subst]
+      simp only [if_neg hxy]
+      cases Ht with
+      | var Γ x' T' hlookup =>
+        simp [lookup] at hlookup
+        have h : y ≠ x := Ne.symm hxy
+        rw [if_neg h] at hlookup
+        let hc := typable_empty_closed s S Hs
+        simp [closed] at hc
+        let hc2 : ∀ x ∈ fv s, lookup Γ x = lookup [] x := by
+          intro x hx
+          rw [hc] at hx
+          cases hx
+        let hci := context_invariance [] Γ s S Hs hc2
+        sorry
+  | tapp t1 t2 =>
+    sorry
+  | tabs y Ty t ih =>
+    by_cases hxy : x = y
+    . simp [subst]
+      subst hxy
+      rw [if_pos rfl]
+      let hc := context_invariance ((x, S)::Γ) Γ (Tm.tabs x Ty t) T Ht
+      apply hc
+      intros x' hfv'
+      simp [fv] at hfv'
+      simp [lookup]
+      sorry
+    . sorry
 
 -- Preservation:
 -- A well-typed term which steps preserves its type
