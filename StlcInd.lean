@@ -192,7 +192,6 @@ theorem context_invariance (Γ Γ' : Context) (t : Tm) (T : Ty) :
   HasType Γ t T →
   (∀ x, x ∈ fv t → (lookup Γ' x) = (lookup Γ x)) →
   HasType Γ' t T := by
-  -- This proof would be by induction on the typing derivation
   intros htype
   induction htype generalizing Γ' with
   | var Γ y T hlookup =>
