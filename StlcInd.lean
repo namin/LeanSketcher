@@ -260,16 +260,9 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
         simp [lookup] at hlookup
         have h : y ≠ x := Ne.symm hxy
         rw [if_neg h] at hlookup
-        let hc := typable_empty_closed s S Hs
-        simp [closed] at hc
-        let hc2 : ∀ x ∈ fv s, lookup Γ x = lookup [] x := by
-          intro x hx
-          rw [hc] at hx
-          cases hx
-        let hci := context_invariance [] Γ s S Hs hc2
-        sorry
-  | tapp t1 t2 =>
-    sorry
+        exact (HasType.var Γ y T hlookup)
+  | tapp t1 t2 ih1 ih2 =>
+      sorry
   | tabs y Ty t ih =>
     by_cases hxy : x = y
     . simp [subst]
