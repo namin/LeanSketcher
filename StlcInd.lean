@@ -371,10 +371,11 @@ theorem soundness (t t' : Tm) (T : Ty) :
   MultiStep t t' →
   ¬ stuck t' := by
   intros Ht Hs
-  have hp := progress t T Ht
-  have ns := progress_not_stuck t hp
   induction Hs with
   | refl t =>
+    have hp := progress t T Ht
+    have ns := progress_not_stuck t hp
     exact ns
-  | step t t' t'' hstep ih =>
-    sorry
+  | step t t' t'' hstep ih iht =>
+    have he := preservation t t' T Ht hstep
+    exact (iht he)
