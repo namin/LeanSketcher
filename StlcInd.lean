@@ -12,10 +12,15 @@
   https://softwarefoundations.cis.upenn.edu/plf-current/Stlc.html
   https://softwarefoundations.cis.upenn.edu/plf-current/StlcProp.html
 -/
+import Lean
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
 import LeanSketcher
 set_option grind.warning false
+
+open Lean
+open Elab.Tactic hiding Context
+open Meta hiding Context subst
 
 -- Syntax
 
@@ -107,42 +112,33 @@ def closed (t : Tm) : Prop := fv t = ∅
 -- A well-typed term is either a value or it can step
 theorem progress (t : Tm) (T : Ty) :
   HasType [] t T → Value t ∨ ∃ t', Step t t' := by
-  intros htype
+  intro htype
   generalize hΓ : [] = Γ at htype
   induction htype with
   | var Γ x T hlookup =>
-      -- Variables can't be typed in empty context
       rw [← hΓ] at hlookup
-      contradiction
+      simp [lookup] at hlookup
   | abs _ x T1 T2 body _ =>
-      -- Abstractions are values
       left
       apply Value.abs
   | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
-      -- Application case
       right
       cases ih1 hΓ with
       | inl hval1 =>
-          -- t1 is a value with arrow type
           cases ih2 hΓ with
           | inl hval2 =>
-              -- t2 is a value
               cases hval1 with
               | abs x T1 body =>
-                use subst x t2 body
-                apply Step.app_abs x T1 body t2 hval2
+                  exists (subst x t2 body)
+                  apply Step.app_abs; assumption
           | inr hstep2 =>
-              -- t2 can step
               obtain ⟨t2', hstep2'⟩ := hstep2
-              use Tm.tapp t1 t2'
-              apply Step.app2 t1 t2 t2' hval1 hstep2'
+              exists (Tm.tapp t1 t2')
+              apply Step.app2 <;> assumption
       | inr hstep1 =>
-          -- t1 can step
-          cases hstep1 with
-          | intro t1' hstep1' =>
-              exists (Tm.tapp t1' t2)
-              apply Step.app1
-              exact hstep1'
+          obtain ⟨t1', hstep1'⟩ := hstep1
+          exists (Tm.tapp t1' t2)
+          apply Step.app1; assumption
 
 -- Lemma: If x is free in t and t is well-typed in context Γ,
 -- then x must be bound in Γ
