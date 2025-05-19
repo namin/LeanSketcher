@@ -187,7 +187,7 @@ theorem context_invariance (Γ Γ' : Context) (t : Tm) (T : Ty) :
   HasType Γ' t T := by
   -- This proof would be by induction on the typing derivation
   intros htype
-  induction htype with
+  induction htype generalizing Γ' with
   | var Γ y T hlookup =>
       intros hinv
       let htype := HasType.var Γ y T hlookup
@@ -200,9 +200,31 @@ theorem context_invariance (Γ Γ' : Context) (t : Tm) (T : Ty) :
       let htype' := HasType.var Γ' y T hinvy
       exact htype'
   | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
-      sorry
+      simp [fv]
+      intros hfvs
+      have hl1 : (∀ x ∈ fv t1, lookup Γ' x = lookup Γ x) := by
+        intro x hx
+        exact hfvs x (Or.inl hx)
+      have hl2 : (∀ x ∈ fv t2, lookup Γ' x = lookup Γ x) := by
+        intro x hx
+        exact hfvs x (Or.inr hx)
+      let htype' := HasType.app Γ' t1 t2 T1 T2 (ih1 Γ' hl1) (ih2 Γ' hl2)
+      exact htype'
   | abs Γ y T1 T2 body ih1 ih2 =>
-      sorry
+      intros hinv
+      simp [fv] at hinv
+      have ha : (∀ x ∈ fv body, lookup ((y, T1) :: Γ') x = lookup ((y, T1) :: Γ) x) := by
+        intro x hx
+        simp [lookup]
+        by_cases hxy : x = y
+        . rw [hxy]
+          simp
+        . simp only [if_neg hxy]
+          apply hinv x hx
+          exact hxy
+      let ih2' := ih2 ((y, T1) :: Γ') ha
+      let htype' := HasType.abs Γ' y T1 T2 body ih2'
+      exact htype'
 
 -- Substitution preserves typing:
 -- If s has type S in an empty context,
