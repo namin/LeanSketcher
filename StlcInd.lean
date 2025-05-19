@@ -4,6 +4,13 @@
 
   This version includes only the core lambda calculus without extensions,
   and uses inductive propositions instead of option types.
+
+  See Dafny version at:
+  https://github.com/namin/dafny-sandbox/blob/master/Stlc.dfy
+
+  See the original Coq version at:
+  https://softwarefoundations.cis.upenn.edu/plf-current/Stlc.html
+  https://softwarefoundations.cis.upenn.edu/plf-current/StlcProp.html
 -/
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
@@ -299,8 +306,13 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
               rw [←h₁, hxy]
             rw [if_neg h₁y]
             rw [if_pos h₁]
-          sorry
-        exact (HasType.abs Γ y Ty T (subst x s t) sorry)
+          · by_cases h₂ : x₁ = y
+            · rw [if_neg h₁, if_pos h₂]
+              rw [if_pos h₂]
+            · rw [if_neg h₁, if_neg h₂]
+              rw [if_neg h₂, if_neg h₁]
+        let hc0 := hc h
+        exact (HasType.abs Γ y Ty T (subst x s t) hc0)
 
 -- Preservation:
 -- A well-typed term which steps preserves its type
