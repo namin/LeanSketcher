@@ -242,7 +242,7 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
   HasType ((x, S)::Γ) t T →
   HasType Γ (subst x s t) T := by
   intros Hs Ht
-  induction t generalizing T with
+  induction t generalizing T Γ with
   | tvar y =>
     by_cases hxy : x = y
     . rw [hxy]
@@ -273,8 +273,8 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
     cases Ht with
     | app Γ t1 t2 T1 T2 htype1 htype2 =>
       apply HasType.app
-      . exact ih1 (T1 ⟹ T) htype1
-      . exact ih2 T1 htype2
+      . exact ih1 Γ (T1 ⟹ T) htype1
+      . exact ih2 Γ T1 htype2
   | tabs y Ty t ih =>
     by_cases hxy : x = y
     . simp [subst]
@@ -311,8 +311,9 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
               rw [if_pos h₂]
             · rw [if_neg h₁, if_neg h₂]
               rw [if_neg h₂, if_neg h₁]
-        let hc0 := hc h
-        exact (HasType.abs Γ y Ty T (subst x s t) hc0)
+        let h0 := ih ((y, Ty)::Γ) T (hc h)
+        apply HasType.abs
+        · exact h0
 
 -- Preservation:
 -- A well-typed term which steps preserves its type
@@ -321,7 +322,7 @@ theorem preservation (t t' : Tm) (T : Ty) :
   Step t t' →
   HasType [] t' T := by
   intros Ht Hs
-  induction Hs with
+  induction Hs generalizing T with
   | app_abs x Ty body arg hval =>
     cases Ht with
     | app Γ f arg T1 T2 htype1 htype2 =>
@@ -329,10 +330,18 @@ theorem preservation (t t' : Tm) (T : Ty) :
       | abs Γ x Ty T body htype =>
         have h := substitution_preserves_typing [] x arg body Ty T htype2 htype
         exact h
-  | app1 f f' arg hstep =>
-    sorry
-  | app2 f arg arg' hval hstep =>
-    sorry
+  | app1 f f' arg hstep ih =>
+    cases Ht with
+    | app Γ f arg T1 T2 htype1 htype2 =>
+      apply HasType.app
+      · exact ih (T1 ⟹ T) htype1
+      · exact htype2
+  | app2 f arg arg' hval hstep ih=>
+    cases Ht with
+    | app Γ f arg T1 T2 htype1 htype2 =>
+      apply HasType.app
+      · exact htype1
+      · exact ih T1 htype2
 
 -- A normal form is a term that cannot step
 def normal_form (t : Tm) : Prop := ¬ ∃ t', Step t t'
