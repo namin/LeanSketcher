@@ -18,8 +18,12 @@ The broader system would be a discovery system, integrating learning and LLMs.
 ## Repository structure
 
 * `LeanSketcher.lean`: Main entry point for the tactics.
-* [`EvalOpt.lean`](EvalOpt.lean): Example proof script demonstrating the tactics.
 * [`LeanSketcher/Basic.lean`](LeanSketcher/Basic.lean): Internals.
+
+### Case studies
+
+* [`EvalOpt.lean`](EvalOpt.lean): demonstrates `auto_induction` tactic, even while the tactic is just a stub.
+* [`STLCInd.lean`](StlcInd.lean): manual proofs so far.
 
 ## Inspirations
 
