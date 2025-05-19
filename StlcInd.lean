@@ -313,7 +313,7 @@ theorem preservation (t t' : Tm) (T : Ty) :
     | app Γ f arg T1 T2 htype1 htype2 =>
       cases htype1 with
       | abs Γ x Ty T body htype =>
-        have h := substitution_preserves_typing [] x arg body T1 T htype2 Lean.MVarId.headBetaType
+        have h := substitution_preserves_typing [] x arg body Ty T htype2 htype
         exact h
   | app1 f f' arg hstep =>
     sorry
