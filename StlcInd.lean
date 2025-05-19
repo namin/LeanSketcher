@@ -353,7 +353,16 @@ def stuck (t : Tm) : Prop := normal_form t ∧ ¬ Value t
 lemma progress_not_stuck (t : Tm) :
   (Value t ∨ ∃ t', Step t t') →
   ¬ stuck t := by
-  sorry
+  intro hp
+  cases hp with
+  | inl hv =>
+      simp [stuck]
+      intro
+      assumption
+   | inr hs =>
+      simp [stuck]
+      intro hn
+      contradiction
 
 -- Type soundness:
 -- A well-typed term cannot get stuck after any number of reduction steps
@@ -361,4 +370,11 @@ theorem soundness (t t' : Tm) (T : Ty) :
   HasType [] t T →
   MultiStep t t' →
   ¬ stuck t' := by
-  sorry
+  intros Ht Hs
+  have hp := progress t T Ht
+  have ns := progress_not_stuck t hp
+  induction Hs with
+  | refl t =>
+    exact ns
+  | step t t' t'' hstep ih =>
+    sorry
