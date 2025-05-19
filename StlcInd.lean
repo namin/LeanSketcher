@@ -235,7 +235,7 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
   HasType ((x, S)::Γ) t T →
   HasType Γ (subst x s t) T := by
   intros Hs Ht
-  induction t with
+  induction t generalizing T with
   | tvar y =>
     by_cases hxy : x = y
     . rw [hxy]
@@ -262,7 +262,12 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
         rw [if_neg h] at hlookup
         exact (HasType.var Γ y T hlookup)
   | tapp t1 t2 ih1 ih2 =>
-      sorry
+    simp [subst]
+    cases Ht with
+    | app Γ t1 t2 T1 T2 htype1 htype2 =>
+      apply HasType.app
+      . exact ih1 (T1 ⟹ T) htype1
+      . exact ih2 T1 htype2
   | tabs y Ty t ih =>
     by_cases hxy : x = y
     . simp [subst]
@@ -285,7 +290,7 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
           have hsym : y ≠ x := Ne.symm h'
           intro x₁ hx
           by_cases h₁ : x₁ = x
-          · rw [if_pos h₁]  -- left side: simplifies to `some S`
+          · rw [if_pos h₁]
             have h₁' : x ≠ y := h'
             have h₁y : x₁ ≠ y := by
               intro hxy
