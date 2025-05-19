@@ -306,7 +306,19 @@ theorem preservation (t t' : Tm) (T : Ty) :
   HasType [] t T →
   Step t t' →
   HasType [] t' T := by
-  sorry
+  intros Ht Hs
+  induction Hs with
+  | app_abs x Ty body arg hval =>
+    cases Ht with
+    | app Γ f arg T1 T2 htype1 htype2 =>
+      cases htype1 with
+      | abs Γ x Ty T body htype =>
+        have h := substitution_preserves_typing [] x arg body T1 T htype2 Lean.MVarId.headBetaType
+        exact h
+  | app1 f f' arg hstep =>
+    sorry
+  | app2 f arg arg' hval hstep =>
+    sorry
 
 -- A normal form is a term that cannot step
 def normal_form (t : Tm) : Prop := ¬ ∃ t', Step t t'
