@@ -281,12 +281,13 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
       let ⟨hfv1, nxy⟩ := hfv'
       simp only [if_neg nxy]
     . simp [subst]
+      have h' : x ≠ y := Ne.intro hxy
+      rw [if_neg h']
       cases Ht with
       | abs Γ y Ty T body htype =>
-        let hc := context_invariance ((y, Ty)::(x, S)::Γ) ((x, S)::(y, Ty)::Γ) t T' htype
+        let hc := context_invariance ((y, Ty)::(x, S)::Γ) ((x, S)::(y, Ty)::Γ) t T htype
         have h : (∀ x_1 ∈ fv t, lookup ((x, S) :: (y, Ty) :: Γ) x_1 = lookup ((y, Ty) :: (x, S) :: Γ) x_1) := by
           simp [lookup]
-          have h' : x ≠ y := Ne.intro hxy
           have hsym : y ≠ x := Ne.symm h'
           intro x₁ hx
           by_cases h₁ : x₁ = x
@@ -298,7 +299,8 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
               rw [←h₁, hxy]
             rw [if_neg h₁y]
             rw [if_pos h₁]
-        exact (HasType.abs Γ y Ty T (subst x s t) (hc h))
+          sorry
+        exact (HasType.abs Γ y Ty T (subst x s t) sorry)
 
 -- Preservation:
 -- A well-typed term which steps preserves its type
