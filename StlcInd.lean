@@ -228,6 +228,27 @@ theorem context_invariance (Γ Γ' : Context) (t : Tm) (T : Ty) :
       let htype' := HasType.abs Γ' y T1 T2 body ih2'
       exact htype'
 
+-- Lookup invariance under context permutation:
+-- If two variables x,y are distinct, then looking up any variable z
+-- in contexts that differ only by the order of x,y bindings gives the same result
+theorem lookup_invariance_swap {Γ : Context} {x y : Nat} {S Ty : Ty} (h' : x ≠ y) :
+  ∀ z, lookup ((x, S) :: (y, Ty) :: Γ) z = lookup ((y, Ty) :: (x, S) :: Γ) z := by
+  intro z
+  simp [lookup]
+  by_cases h₁ : z = x
+  · rw [if_pos h₁]
+    have h₁y : z ≠ y := by
+      intro hxy
+      apply h'
+      rw [←h₁, hxy]
+    rw [if_neg h₁y]
+    rw [if_pos h₁]
+  · by_cases h₂ : z = y
+    · rw [if_neg h₁, if_pos h₂]
+      rw [if_pos h₂]
+    · rw [if_neg h₁, if_neg h₂]
+      rw [if_neg h₂, if_neg h₁]
+
 -- Substitution preserves typing:
 -- If s has type S in an empty context,
 -- and t has type T in a context extended with x having type S,
@@ -289,23 +310,8 @@ theorem substitution_preserves_typing (Γ : Context) (x : Nat) (s t : Tm) (S T :
       | abs Γ y Ty T body htype =>
         let hc := context_invariance ((y, Ty)::(x, S)::Γ) ((x, S)::(y, Ty)::Γ) t T htype
         have h : (∀ x_1 ∈ fv t, lookup ((x, S) :: (y, Ty) :: Γ) x_1 = lookup ((y, Ty) :: (x, S) :: Γ) x_1) := by
-          simp [lookup]
-          have hsym : y ≠ x := Ne.symm h'
           intro x₁ hx
-          by_cases h₁ : x₁ = x
-          · rw [if_pos h₁]
-            have h₁' : x ≠ y := h'
-            have h₁y : x₁ ≠ y := by
-              intro hxy
-              apply h'
-              rw [←h₁, hxy]
-            rw [if_neg h₁y]
-            rw [if_pos h₁]
-          · by_cases h₂ : x₁ = y
-            · rw [if_neg h₁, if_pos h₂]
-              rw [if_pos h₂]
-            · rw [if_neg h₁, if_neg h₂]
-              rw [if_neg h₂, if_neg h₁]
+          apply lookup_invariance_swap h'
         let h0 := ih ((y, Ty)::Γ) T (hc h)
         apply HasType.abs
         · exact h0
