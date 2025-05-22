@@ -25,7 +25,7 @@ The broader system would be a discovery system, integrating learning and LLMs.
 
 * [`EvalOpt.lean`](EvalOpt.lean): demonstrates `auto_induction` tactic, even while the tactic is just a stub.
 * [`StlcInd.lean`](StlcInd.lean): STLC with some manual proofs.
-* [`SltcIndSketched.lean`](StlcIndSkeatched.lean): demonstrates some automation over STLC proofs. 
+* [`SltcIndSketched.lean`](StlcIndSketched.lean): demonstrates some automation over STLC proofs. 
 
 ## Inspirations
 
