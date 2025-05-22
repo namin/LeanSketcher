@@ -9,6 +9,9 @@ scope = "leanprover-community"
 [[lean_lib]]
 name = "LeanSketcher"
 
+[[lean_lib]]
+name = "StlcInd"
+
 [[lean_exe]]
 name = "leansketcher"
 root = "Main"

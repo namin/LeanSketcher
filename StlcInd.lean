@@ -12,15 +12,8 @@
   https://softwarefoundations.cis.upenn.edu/plf-current/Stlc.html
   https://softwarefoundations.cis.upenn.edu/plf-current/StlcProp.html
 -/
-import Lean
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
-import LeanSketcher
-set_option grind.warning false
-
-open Lean
-open Elab.Tactic hiding Context
-open Meta hiding Context subst
 
 -- Syntax
 
