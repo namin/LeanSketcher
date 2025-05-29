@@ -12,6 +12,9 @@ name = "LeanSketcher"
 [[lean_lib]]
 name = "StlcInd"
 
+[[lean_lib]]
+name = "StlcIndX"
+
 [[lean_exe]]
 name = "leansketcher"
 root = "Main"
