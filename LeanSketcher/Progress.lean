@@ -75,15 +75,8 @@ syntax (name := stepSolveWith) "stepSolveWith " "[" term,* "]" : tactic
 def asElimTarget (id : Syntax) : TSyntax ``elimTarget :=
   ⟨Syntax.node Lean.SourceInfo.none `elimTarget #[id]⟩
 
-syntax (name := dischargeCaseProgress)
-  "discharge_case_progress " ident "[" term,* "]" "[" term,* "]" : tactic
-
-@[tactic dischargeCaseProgress]
-def evalDischargeCaseProgress : Tactic := fun stx => do
-  let p := stx[1].getId
-  let ihs := stx[3].getSepArgs
-  let ctorTerms := stx[6].getSepArgs
-
+-- Helper function containing the common logic
+def dischargeCaseProgressImpl (p : Name) (ihs : Array Syntax) (ctorTerms : Array Syntax) : TacticM Unit := do
   -- Build `cases ih1 <;> cases ih2`
   let tacticSeq ←
     if ihs.isEmpty then
@@ -110,5 +103,38 @@ def evalDischargeCaseProgress : Tactic := fun stx => do
 
   evalTactic full
 
+syntax (name := dischargeCaseProgress)
+  "discharge_case_progress " ident "[" term,* "]" "[" term,* "]" : tactic
+
+@[tactic dischargeCaseProgress]
+def evalDischargeCaseProgress : Tactic := fun stx => do
+  let p := stx[1].getId
+  let ihs := stx[3].getSepArgs
+  let ctorTerms := stx[6].getSepArgs
+  dischargeCaseProgressImpl p ihs ctorTerms
+
+def getInductiveConstructors (typeName : Name) : MetaM (List Name) := do
+  let env ← getEnv
+  match env.find? typeName with
+  | some (ConstantInfo.inductInfo info) =>
+    pure info.ctors
+  | _ => throwError s!"Type {typeName} is not an inductive type"
+
+syntax (name := dischargeCaseProgressAuto)
+  "discharge_case_progress_auto " ident ident "[" term,* "]" : tactic
+
+@[tactic dischargeCaseProgressAuto]
+def evalDischargeCaseProgressAuto : Tactic := fun stx => do
+  let typeName := stx[1].getId
+  let p := stx[2].getId
+  let ihs := stx[4].getSepArgs
+
+  -- Get constructors automatically
+  let ctorNames ← getInductiveConstructors typeName
+  let ctorTerms ← ctorNames.mapM fun name => do
+    let ident := mkIdent name
+    pure ident.raw
+
+  dischargeCaseProgressImpl p ihs ctorTerms.toArray
 
 end LeanSketcher

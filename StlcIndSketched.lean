@@ -14,4 +14,4 @@ theorem progress_sketched (t : Tm) (T : Ty) :
       apply Value.abs
   | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
       right
-      (discharge_case_progress Value [ih1 hΓ, ih2 hΓ] [Step.app_abs, Step.app2, Step.app1])
+      (discharge_case_progress_auto Step Value [ih1 hΓ, ih2 hΓ])
