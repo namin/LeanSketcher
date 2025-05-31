@@ -179,47 +179,37 @@ theorem typable_empty_closed (t : Tm) (T : Ty) :
 -- then the term t is well-typed in context Γ' with the same type
 theorem context_invariance (Γ Γ' : Context) (t : Tm) (T : Ty) :
   HasType Γ t T →
-  (∀ x, x ∈ fv t → (lookup Γ' x) = (lookup Γ x)) →
+  (∀ x, x ∈ fv t → lookup Γ' x = lookup Γ x) →
   HasType Γ' t T := by
-  intros htype
+  intros htype hinv
   induction htype generalizing Γ' with
   | var Γ y T hlookup =>
-      intros hinv
-      let htype := HasType.var Γ y T hlookup
-      have hfv : y ∈ fv (Tm.tvar y) := by
-        simp [fv]
-      let hxin := free_in_context Γ y (Tm.tvar y) T hfv htype
-      obtain ⟨T', hget⟩ := hxin
-      let hinvy := hinv y hfv
-      rw [hlookup] at hinvy
-      let htype' := HasType.var Γ' y T hinvy
-      exact htype'
+    apply HasType.var
+    rw [hinv]
+    · exact hlookup
+    · simp [fv]
   | app Γ t1 t2 T1 T2 h1 h2 ih1 ih2 =>
+    apply HasType.app
+    · apply ih1
+      intro x hx
+      apply hinv
       simp [fv]
-      intros hfvs
-      have hl1 : (∀ x ∈ fv t1, lookup Γ' x = lookup Γ x) := by
-        intro x hx
-        exact hfvs x (Or.inl hx)
-      have hl2 : (∀ x ∈ fv t2, lookup Γ' x = lookup Γ x) := by
-        intro x hx
-        exact hfvs x (Or.inr hx)
-      let htype' := HasType.app Γ' t1 t2 T1 T2 (ih1 Γ' hl1) (ih2 Γ' hl2)
-      exact htype'
-  | abs Γ y T1 T2 body ih1 ih2 =>
-      intros hinv
-      simp [fv] at hinv
-      have ha : (∀ x ∈ fv body, lookup ((y, T1) :: Γ') x = lookup ((y, T1) :: Γ) x) := by
-        intro x hx
-        simp [lookup]
-        by_cases hxy : x = y
-        . rw [hxy]
-          simp
-        . simp only [if_neg hxy]
-          apply hinv x hx
-          exact hxy
-      let ih2' := ih2 ((y, T1) :: Γ') ha
-      let htype' := HasType.abs Γ' y T1 T2 body ih2'
-      exact htype'
+      exact Or.inl hx
+    · apply ih2
+      intro x hx
+      apply hinv
+      simp [fv]
+      exact Or.inr hx
+  | abs Γ y T1 T2 body _ ih2 =>
+    apply HasType.abs
+    apply ih2
+    intro x hx
+    simp [lookup]
+    split_ifs with h
+    · rfl  -- x = y case
+    · apply hinv  -- x ≠ y case
+      simp [fv]
+      exact ⟨hx, h⟩
 
 -- Lookup invariance under context permutation:
 -- If two variables x,y are distinct, then looking up any variable z
